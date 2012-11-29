@@ -1,10 +1,11 @@
 package com.xorlev.simon.handlers
 
-import com.xorlev.simon.{HttpResponse, RequestHandler}
+import com.xorlev.simon.model.HttpResponse
+import com.xorlev.simon.RequestHandler
 import com.xorlev.simon.RequestParser.HttpRequest
 import java.io.{FileInputStream, FileNotFoundException, File}
 import javax.activation.MimetypesFileTypeMap
-import com.xorlev.simon.util.MimeUtil
+import com.xorlev.simon.util.{RenderUtil, MimeUtil}
 
 /**
  * 2012-11-26
@@ -14,10 +15,9 @@ import com.xorlev.simon.util.MimeUtil
 class StaticFileRequestHandler(basePath: String) extends RequestHandler {
   def handleRequest(request: HttpRequest):Option[HttpResponse] = {
     try {
-      println(request)
-      val path = handleEmptyPath(request.request.resource.split("/").drop(1).mkString("/"))
+      log.debug("StaticFileRequestHandler[{}]", request)
 
-      println("/Users/xorlev/Code/blog/_site/" + path.mkString("/"))
+      val path = handleEmptyPath(request.request.resource.split("/").drop(1).mkString("/"))
       val file = openFile(path)
 
       file.flatMap { fi =>
@@ -32,7 +32,7 @@ class StaticFileRequestHandler(basePath: String) extends RequestHandler {
       }
 
     } catch {
-      case ex:Throwable => Some(HttpResponse(500, MimeUtil.processMime("html"), renderStackTrace(ex)))
+      case ex:Throwable => Some(HttpResponse(500, MimeUtil.processMime("html"), RenderUtil.renderStackTrace(ex)))
       case _ => None
     }
   }

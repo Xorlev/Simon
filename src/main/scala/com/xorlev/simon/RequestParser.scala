@@ -1,13 +1,14 @@
 package com.xorlev.simon
 
 import scala.io.Source
+import util.Loggable
 
 /**
  * 2012-11-25
  * @author Michael Rose <michael@fullcontact.com>
  */
 
-object RequestParser {
+object RequestParser extends Loggable {
   case class RequestLine(method: String, resource: String, version: String)
   case class HeaderLine(name: String, value: String)
   case class HttpRequest(request: RequestLine, headers: List[HeaderLine],
@@ -30,7 +31,7 @@ object RequestParser {
   }
 
   def decodeRequest(source: Source): Option[HttpRequest] = {
-    println("Decoding...")
+    log.debug("Decoding...")
     val lines = source.getLines()
 
     try {
