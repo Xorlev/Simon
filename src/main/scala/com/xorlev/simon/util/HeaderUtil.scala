@@ -3,7 +3,8 @@ package com.xorlev.simon.util
 import java.lang.String
 import java.text.SimpleDateFormat
 import java.util.Date
-import org.joda.time.DateTime
+import org.joda.time.{DateTimeZone, DateTime}
+import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 
 /**
  * 2012-11-28
@@ -19,6 +20,6 @@ object HeaderUtil {
   }
 
   def now(): String = {
-    DateTime.now().formatted(RFC1123_DATE_PATTERN)
+    DateTime.now().withZone(DateTimeZone.UTC).toString(RFC1123_DATE_PATTERN)
   }
 }
