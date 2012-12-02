@@ -5,7 +5,7 @@ import java.io.File
 
 /**
  * 2012-11-28
- * @author Michael Rose <michael@fullcontact.com>
+ * @author Michael Rose <elementation@gmail.com>
  */
 
 object MimeUtil {
@@ -18,6 +18,8 @@ object MimeUtil {
     "jpg"  -> "image/jpeg",
     "jpeg"  -> "image/jpeg"
   ).withDefaultValue("text/plain")
+
+  val HTML: String = mimeTypes("html")
 
   def processMime(file: File): String = {
     mimeTypes(extension(file.getAbsolutePath))

@@ -4,10 +4,23 @@ import com.xorlev.simon.RequestParser.HttpRequest
 import java.io.{ByteArrayInputStream, InputStream, OutputStream}
 import model.HttpResponse
 import util.Loggable
+import collection.mutable.ListBuffer
 
 
-trait RequestHandler extends Loggable {
+abstract class RequestHandler extends Loggable {
+  var filterList: ListBuffer[(String) => String] = ListBuffer()
+
   def handleRequest(request: HttpRequest): Option[HttpResponse]
+
+  def filterPath(p: String): String = {
+    filterList.foldLeft(p) { (pNew, op) =>
+      op(pNew)
+    }
+  }
+
+  protected[this] def registerFilter(f :(String) => String) {
+    filterList.append(f)
+  }
 
   implicit def stringToInputStream(s: String): InputStream = {
     new ByteArrayInputStream(s.getBytes)

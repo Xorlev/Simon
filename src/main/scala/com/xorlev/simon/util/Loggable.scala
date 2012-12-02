@@ -4,9 +4,9 @@ import org.slf4j.LoggerFactory
 
 /**
  * 2012-11-28
- * @author Michael Rose <michael@fullcontact.com>
+ * @author Michael Rose <elementation@gmail.com>
  */
 
 trait Loggable {
-  protected lazy val log = LoggerFactory.getLogger(this.getClass)
+  protected val log = LoggerFactory.getLogger(this.getClass)
 }

@@ -1,107 +1,126 @@
 package com.xorlev.simon
 
-import handlers.StaticFileRequestHandler
+import handlers.{ErrorHandler, StaticFileRequestHandler}
 import java.lang.String
-import java.net.{Socket, ServerSocket, InetAddress}
+import java.net.{SocketException, Socket, ServerSocket, InetAddress}
 import collection.mutable.ListBuffer
 import io.Source
-import ch.qos.logback.classic.Logger
-import org.slf4j.LoggerFactory
-import java.io.{ByteArrayOutputStream, OutputStream, ByteArrayInputStream}
+import model.HttpResponse
+import java.io.{FileInputStream, OutputStream, ByteArrayInputStream}
 import com.google.common.io.ByteStreams
-import util.HeaderUtil
-import java.util.zip.{DeflaterOutputStream, GZIPOutputStream}
+import model.HttpResponse
+import util._
 import com.xorlev.simon.RequestParser.HttpRequest
+import java.util.concurrent.{TimeUnit, Executors}
+import com.yammer.metrics.Metrics
+import com.yammer.metrics.scala.Instrumented
+import sun.misc.{Signal, SignalHandler}
+import org.slf4j.MDC
+import com.xorlev.simon.RequestParser.HttpRequest
+import scala.Some
+import org.yaml.snakeyaml.Yaml
 
 /**
  * 2012-11-25
- * @author Michael Rose <michael@fullcontact.com>
+ * @author Michael Rose <elementation@gmail.com>
  */
 
-class HttpServer(host: String, port: Int) {
-  val log = LoggerFactory.getLogger(this.getClass)
+class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
   val addr = InetAddress.getByName(host)
-  val socket = new ServerSocket(port)
+  val socket = new ServerSocket(port, 16384)
 
   var running: Boolean = false
 
-  def runServer() = {
+  val tp = Executors.newFixedThreadPool(4)
+  val m = metrics.meter("requests", "requests")
+  init()
+
+  def init() {
+    val h:SignalHandler = new SignalHandler {
+      def handle(p1: Signal) {
+        stop()
+      }
+    }
+    Signal.handle(new Signal("TERM"), h)
+    /*Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+      def run() { stop() }
+    }))*/
+  }
+
+  def runServer() {
     running = true
+    socket.setPerformancePreferences(0,1,2)
+    socket.setReuseAddress(true)
 
-    log.info("Server started on {}", port)
-    while(running) {
-      val sock = socket.accept()
-      log.info("Accepted socket")
+    log.info("Server started on {}, ({})", port, JmxUtil.getPid)
+    try {
+      while(running) {
+        val sock = socket.accept()
+        sock.setReuseAddress(true)
+        sock.setKeepAlive(false)
+        m.mark()
+        log.trace("Accepted socket {}", sock.getRemoteSocketAddress)
 
-      handleRequest(sock)
-
-      sock.close()
+        tp.submit(new Handler(sock))
+      }
+    } catch {
+      case e:SocketException => log.error("Socket error:",e)
     }
 
   }
 
   def stop() = {
+    log.info("Shutting down...")
     running = false
+    tp.awaitTermination(5, TimeUnit.SECONDS)
+    tp.shutdown()
+    log.info("Closing listener")
     socket.close()
+    System.exit(0)
   }
 
-  def handleRequest(sock: Socket) {
-    val req = RequestParser.decodeRequest(Source.createBufferedSource(sock.getInputStream))
-    log.info("Parsed request {}", req)
-
-    val resp = req.flatMap { r =>
-      getHandler(r.request.resource).handleRequest(r)
-    }.getOrElse {
-      HttpResponse(400, "text/html", new ByteArrayInputStream("<h2>Bad Request</h2>".getBytes))
+  class Handler(socket: Socket) extends Runnable with Instrumented {
+    def run() {
+      handleRequest(socket)
     }
 
-    val os = sock.getOutputStream
-    writeContent(req.get, os, resp)
-    os.flush()
-    os.close()
-  }
+    def handleRequest(sock: Socket) {
+      sock.setSoTimeout(3000)
+      val req = RequestParser.decodeRequest(sock.getInputStream)
+      log.info("Parsed request {}", req)
 
-  def getHandler(path: String): RequestHandler = {
-    new StaticFileRequestHandler("/Users/xorlev/Code/blog/_site/")
-  }
+      val resp = req.flatMap { r =>
+        RequestMapper.getHandler(r.request.resource).handleRequest(r)
+      }.getOrElse {
+        HttpResponse(400, "text/html", new ByteArrayInputStream("<h2>Bad Request</h2>".getBytes))
+      }
 
-  def writeContent(request: HttpRequest, os: OutputStream, response: HttpResponse) {
-    val codes = Map(
-      200 -> "200 OK",
-      400 -> "400 Bad Request",
-      404 -> "404 Not Found",
-      500 -> "500 Internal Server Error"
-    )
-    var headers = ListBuffer(
-      "HTTP/1.1 " + codes(response.responseCode),
-      "Content-Type: " + response.mimeType +"",
-      "Date: " + HeaderUtil.now(),
-      "X-XSS-Protection: 1; mode=block",
-      //"Content-Encoding: deflate",
-      "Connection: close"
-    )
+      log.debug("Response: {}", resp)
 
-    /*val x = <HTML>
-      <HEAD>
-        <TITLE>Hello World!</TITLE>
-      </HEAD>
-      <BODY>
-        <H1>Hello World!</H1>
-        The webserver is up and running
-        <A HREF="http://www.google.com/">here</A>.
-      </BODY>
-     </HTML>*/
+      val os = sock.getOutputStream
+      writeContent(os, resp)
+      os.flush()
+      os.close()
+      sock.close()
+    }
 
-    val inputStream = response.response
-    val x = new ByteArrayOutputStream()
-    //val size = ByteStreams.copy(response.response, new DeflaterOutputStream(x))
+    def writeContent(os: OutputStream, response: HttpResponse) {
+      val inputStream = response.response
+      val headers = ListBuffer(
+        "HTTP/1.1 " + HttpCodeUtil.lookupCode(response.responseCode),
+        "Content-Type: " + response.mimeType +"",
+        "Content-length: " + inputStream.available,
+        "Date: " + HeaderUtil.now(),
+        "Server: Simon/" + VersionUtil.getVersionString,
+        "X-XSS-Protection: 1; mode=block"
+      )
+      headers.appendAll(response.extraHeaders.map{ it => it.name + ": " + it.value})
+      headers.append("Connection: close")
 
-    headers += "Content-length: " + inputStream.available
-
-    os.write((headers.mkString("\r\n") + "\r\n\r\n").getBytes)
-
-    os.write(ByteStreams.toByteArray(inputStream))
-    os.flush()
-    inputStream.close()
+      os.write((headers.mkString("\r\n") + "\r\n\r\n").getBytes)
+      os.write(ByteStreams.toByteArray(inputStream))
+      os.flush()
+      inputStream.close()
+    }
   }
 }

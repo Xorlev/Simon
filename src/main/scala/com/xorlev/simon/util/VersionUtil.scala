@@ -2,7 +2,7 @@ package com.xorlev.simon.util
 
 /**
  * 2012-11-28
- * @author Michael Rose <michael@fullcontact.com>
+ * @author Michael Rose <elementation@gmail.com>
  */
 
 object VersionUtil {

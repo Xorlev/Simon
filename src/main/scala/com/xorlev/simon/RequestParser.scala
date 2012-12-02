@@ -2,10 +2,12 @@ package com.xorlev.simon
 
 import scala.io.Source
 import util.Loggable
+import java.io.{InputStreamReader, InputStream}
+import com.google.common.io.{CharStreams, LineReader}
 
 /**
  * 2012-11-25
- * @author Michael Rose <michael@fullcontact.com>
+ * @author Michael Rose <elementation@gmail.com>
  */
 
 object RequestParser extends Loggable {
@@ -30,9 +32,9 @@ object RequestParser extends Loggable {
     //Some(lines.foldLeft("")(_+_))
   }
 
-  def decodeRequest(source: Source): Option[HttpRequest] = {
+  def decodeRequest(stream: InputStream): Option[HttpRequest] = {
     log.debug("Decoding...")
-    val lines = source.getLines()
+    val lines = Source.fromInputStream(stream).getLines()
 
     try {
       for (
