@@ -4,7 +4,7 @@ import java.util.Date
 
 /**
  * 2012-12-02
- * @author Michael Rose <michael@fullcontact.com>
+ * @author Michael Rose <elementation@gmail.com>
  */
 
 class TestHandler(basePath: String) extends DynamicMethodHandler {
