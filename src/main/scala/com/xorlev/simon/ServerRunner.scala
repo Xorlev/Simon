@@ -15,7 +15,7 @@ object ServerRunner extends Loggable {
   def main(args:Array[String]) = {
     log.info("Starting Simon HTTP server")
 
-    RequestMapper.registerHandler("/", new StaticFileRequestHandler("/", "/Users/xorlev/Code/blog/_site/"))
+    RequestMapper.registerHandler("/", new StaticFileRequestHandler("/", "_site/"))
 
     new HttpServer("localhost", 1337)
       .runServer()
