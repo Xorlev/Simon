@@ -13,7 +13,7 @@ import com.google.common.io.{CharStreams, LineReader}
 object RequestParser extends Loggable {
   case class RequestLine(method: String, resource: String, version: String)
   case class HeaderLine(name: String, value: String)
-  case class HttpRequest(request: RequestLine, headers: List[HeaderLine],
+  case class HttpRequest(request: RequestLine, headers: List[HeaderLine], params: Map[String,String] = Map(),
                          body: String)
 
   def parseHeaders(headers: Iterator[String]): Option[List[HeaderLine]] = {
@@ -41,7 +41,7 @@ object RequestParser extends Loggable {
         req <- parseRequestLine(lines.next());
         headers <- parseHeaders(lines.takeWhile({ s => s.contains(':') }));
         body <- getBody(lines)
-        ) yield HttpRequest(req, headers, body)
+        ) yield HttpRequest(req, headers, Map(), body)
     } catch {
       case ex:Throwable => None
     }

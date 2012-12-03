@@ -1,6 +1,6 @@
 package com.xorlev.simon
 
-import handlers.StaticFileRequestHandler
+import handlers.{TestHandler, StaticFileRequestHandler}
 import util.Loggable
 import org.yaml.snakeyaml.Yaml
 import java.io.{IOException, FileInputStream}
@@ -15,7 +15,8 @@ object ServerRunner extends Loggable {
   def main(args:Array[String]) = {
     log.info("Starting Simon HTTP server")
 
-    RequestMapper.registerHandler("/", new StaticFileRequestHandler("/", "_site/"))
+    //RequestMapper.registerHandler("/", new StaticFileRequestHandler("/", "_site/"))
+    RequestMapper.registerHandler("/", new TestHandler("/"))
 
     new HttpServer("localhost", 1337)
       .runServer()

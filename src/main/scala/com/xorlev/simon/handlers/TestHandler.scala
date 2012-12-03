@@ -15,7 +15,8 @@ class TestHandler(basePath: String) extends DynamicMethodHandler {
       </head>
       <body>
         <h1>Test</h1>
-        ${new Date()}
+        {new Date()}
+        {params("hello")}
       </body>
     </html>
   }
