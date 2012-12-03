@@ -20,7 +20,8 @@ Goals
 -----
 + Efficient parsing HTTP headers
 + Dealing with IO myself (not Netty)
-+ Writing request handlers
++ Writing interesting request handlers (e.x. Scalatra, Scalate)
++ Modules (e.x. Proxy)
 + Servlet integration
 + Embeddable
 + Performant?
