@@ -61,8 +61,8 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
         m.mark()
         log.trace("Accepted socket {}", sock.getRemoteSocketAddress)
 
-        //tp.submit(new Handler(sock))
-        new Handler(sock).run()
+        tp.submit(new Handler(sock))
+        //new Handler(sock).run()
       }
     } catch {
       case e:SocketException => log.error("Socket error:",e)
@@ -90,14 +90,18 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
       val req = RequestParser.decodeRequest(sock.getInputStream)
       log.info("Parsed request {}", req)
 
-      val resp = req.flatMap { r =>
-        RequestMapper.getHandler(r.request.resource).handleRequest(r)
-      }.getOrElse {
-        HttpResponse(400, "text/html", new ByteArrayInputStream("<h2>Bad Request</h2>".getBytes))
+      val resp = try {
+        req.flatMap {
+          r =>
+            RequestMapper.getHandler(r.request.resource).handleRequest(r)
+        }.getOrElse {
+          HttpResponse(400, "text/html", new ByteArrayInputStream("<h2>Bad Request</h2>".getBytes))
+        }
+      } catch {
+        case ex:Throwable => HttpResponse(500, "text/html", new ByteArrayInputStream(RenderUtil.renderStackTrace(ex).getBytes))
       }
 
       log.debug("Response: {}", resp)
-
       val os = sock.getOutputStream
       writeContent(os, resp)
       os.flush()
