@@ -18,7 +18,7 @@ class DynamicMethodHandler extends RequestHandler {
 
   val paramsMap = new DynamicVariable[mutable.Map[String,String]](null)
 
-  def params(name:String):String = paramsMap.value.get(name).get
+  implicit def params: mutable.Map[String, String] = paramsMap.value
 
   override def handleRequest(request: HttpRequest): Option[HttpResponse] = {
     val r = request.request
