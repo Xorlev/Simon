@@ -37,6 +37,10 @@ class DynamicMethodHandler extends RequestHandler {
 
   def get(path: String)(f: =>Any) = ctx.put(("GET", path), x=>f.toString)
   def post(path: String)(f: =>Any) = ctx.put(("POST", path), x=>f.toString)
+  def put(path: String)(f: =>Any) = ctx.put(("PUT", path), x=>f.toString)
+  def delete(path: String)(f: =>Any) = ctx.put(("DELETE", path), x=>f.toString)
+  def options(path: String)(f: =>Any) = ctx.put(("OPTIONS", path), x=>f.toString)
+  def head(path: String)(f: =>Any) = ctx.put(("HEAD", path), x=>f.toString)
 
   def runRoute(request: HttpRequest, route: (String, String)): String = {
     //var params = request.params
