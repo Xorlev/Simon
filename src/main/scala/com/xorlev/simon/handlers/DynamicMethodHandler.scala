@@ -25,14 +25,11 @@ class DynamicMethodHandler extends RequestHandler {
 
     println(r)
     if (ctx.isDefinedAt((r.method, r.resource))) {
-      val h = Some(HttpResponse(
+      Some(HttpResponse(
         200,
         MimeUtil.HTML,
         runRoute(request, (r.method, r.resource))
       ))
-
-      println(h)
-      h
     } else {
       return Some(HttpResponse(404, MimeUtil.HTML, RenderUtil.notFound()))
     }
