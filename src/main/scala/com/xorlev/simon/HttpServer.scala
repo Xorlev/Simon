@@ -1,24 +1,17 @@
 package com.xorlev.simon
 
-import handlers.{ErrorHandler, StaticFileRequestHandler}
 import java.lang.String
 import java.net.{SocketException, Socket, ServerSocket, InetAddress}
 import collection.mutable.ListBuffer
-import io.Source
-import model.HttpResponse
-import java.io.{FileInputStream, OutputStream, ByteArrayInputStream}
+import java.io.{InputStream, FileInputStream, OutputStream, ByteArrayInputStream}
 import com.google.common.io.ByteStreams
 import model.HttpResponse
 import util._
-import com.xorlev.simon.RequestParser.HttpRequest
 import java.util.concurrent.{TimeUnit, Executors}
-import com.yammer.metrics.Metrics
 import com.yammer.metrics.scala.Instrumented
 import sun.misc.{Signal, SignalHandler}
-import org.slf4j.MDC
-import com.xorlev.simon.RequestParser.HttpRequest
-import scala.Some
-import org.yaml.snakeyaml.Yaml
+
+import java.nio.channels.Channels
 
 /**
  * 2012-11-25
@@ -123,9 +116,21 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
       headers.append("Connection: close")
 
       os.write((headers.mkString("\r\n") + "\r\n\r\n").getBytes)
+
+
       os.write(ByteStreams.toByteArray(inputStream))
       os.flush()
       inputStream.close()
+    }
+
+    def processInputStream(in: InputStream, out: OutputStream) {
+      in match {
+        case in:FileInputStream => {
+          val ch = in.getChannel
+          ch.transferTo(0, ch.size, Channels.newChannel(out))
+        }
+        case in:InputStream => out.write(ByteStreams.toByteArray(in))
+      }
     }
   }
 }
