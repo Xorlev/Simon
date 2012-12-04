@@ -24,7 +24,7 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
 
   var running: Boolean = false
 
-  val tp = Executors.newFixedThreadPool(4)
+  val tp = Executors.newFixedThreadPool(16)
   val m = metrics.meter("requests", "requests")
   init()
 
