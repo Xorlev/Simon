@@ -1,9 +1,9 @@
 package com.xorlev.simon
 
+import model.HttpRequest
 import scala.io.Source
 import util.Loggable
-import java.io.{InputStreamReader, InputStream}
-import com.google.common.io.{CharStreams, LineReader}
+import java.io.InputStream
 
 /**
  * 2012-11-25
@@ -13,14 +13,12 @@ import com.google.common.io.{CharStreams, LineReader}
 object RequestParser extends Loggable {
   case class RequestLine(method: String, resource: String, version: String)
   case class HeaderLine(name: String, value: String)
-  case class HttpRequest(request: RequestLine, headers: List[HeaderLine], params: Map[String,String] = Map(),
-                         body: String)
 
-  def parseHeaders(headers: Iterator[String]): Option[List[HeaderLine]] = {
+  def parseHeaders(headers: Iterator[String]): Option[List[(String, String)]] = {
     try {
       Some(headers.map { line =>
         val Array(name, value) = line.split(":", 2).map(_.trim)
-        HeaderLine(name, value)
+        (name, value)
       }.toList)
     } catch {
       case ex: Throwable => None
@@ -38,22 +36,45 @@ object RequestParser extends Loggable {
 
     try {
       for (
-        req <- parseRequestLine(lines.next());
+        (req, params) <- parseRequestLine(lines.next());
         headers <- parseHeaders(lines.takeWhile({ s => s.contains(':') }));
         body <- getBody(lines)
-        ) yield HttpRequest(req, headers, Map(), body)
+        ) yield HttpRequest(req, headers.toMap, params, body)
     } catch {
-      case ex:Throwable => None
+      case ex:Throwable => println(ex); None
     }
   }
 
-  def parseRequestLine(line: String): Option[RequestLine] = {
-    if (List("GET", "POST", "PUT", "DELETE").contains(line.split(' ')(0))) {
-      val Array(method, resource, version) = line.split(' ')
+  def parseRequestLine(line: String): Option[(RequestLine, Map[String, String])] = {
+    val lineMatcher = "(GET|POST|PUT|DELETE|OPTIONS|HEAD) (.*) HTTP/(1.0|1.1)".r
+      .pattern
+      .matcher(line)
 
-      return Some(RequestLine(method, resource, version))
+    if (lineMatcher.matches) {
+      val (method, resource, version) = (lineMatcher.group(1), lineMatcher.group(2), "HTTP/" + lineMatcher.group(3))
+      val parsedParams = getParams(resource).get
+
+      return Some((RequestLine(method, parsedParams._1, version), parsedParams._2))
     }
 
     None
+  }
+
+  def getParams(request: String): Option[(String, Map[String,String])] = {
+    try {
+      val parsedResource = request.trim.split("\\?", 2)
+      if (parsedResource.size > 1 && parsedResource(1).size > 0) {
+        val paramMap = parsedResource(1)
+          .split('&')
+          .map {x => x.split("=", 2)}
+          .collect {case x => (x(0), x(1))}
+          .toMap
+
+        return Some((parsedResource(0), paramMap))
+      }
+      Some(parsedResource(0), Map.empty)
+    } catch {
+      case ex:Throwable => println(ex);None
+    }
   }
 }

@@ -1,8 +1,7 @@
 package com.xorlev.simon
 
-import com.xorlev.simon.RequestParser.HttpRequest
-import java.io.{ByteArrayInputStream, InputStream, OutputStream}
-import model.HttpResponse
+import java.io.{ByteArrayInputStream, InputStream}
+import model.{HttpRequest, HttpResponse}
 import util.Loggable
 import collection.mutable.ListBuffer
 

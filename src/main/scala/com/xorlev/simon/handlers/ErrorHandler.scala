@@ -1,8 +1,7 @@
 package com.xorlev.simon.handlers
 
 import com.xorlev.simon.RequestHandler
-import com.xorlev.simon.RequestParser.HttpRequest
-import com.xorlev.simon.model.HttpResponse
+import com.xorlev.simon.model.{HttpRequest, HttpResponse}
 import com.xorlev.simon.util.{RenderUtil, MimeUtil}
 
 /**

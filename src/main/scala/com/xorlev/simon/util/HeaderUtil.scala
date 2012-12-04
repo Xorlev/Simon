@@ -28,9 +28,16 @@ object HeaderUtil {
   // 0.9 => 9
   // More specific is higher
   def parseAccept(accept: String): List[String] = {
-    accept.split(",").map(_.trim).map { s =>
+    accept.split(",").map(_.trim).reverse.zipWithIndex.map { s =>
+      //println(s)
+      val parts = s._1.split(";")
+      val scoreModifier = if (parts.size > 1) {
+        val typeParts = parts(1).split("=").map(_.trim)
 
-    }
-    List()
+        (Option(typeParts(1)).map(_.toDouble).getOrElse(1.0) * 10).ceil.toInt
+      } else 10
+
+      (s._1, s._2 + scoreModifier)
+    }.toList.sortWith((k1,k2) => k1._2 > k2._2).map(_._1)
   }
 }

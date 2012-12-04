@@ -1,8 +1,7 @@
 package com.xorlev.simon.handlers
 
 import com.xorlev.simon.RequestHandler
-import com.xorlev.simon.RequestParser.HttpRequest
-import com.xorlev.simon.model.HttpResponse
+import com.xorlev.simon.model.{HttpRequest, HttpResponse}
 import collection.mutable.HashMap
 import com.xorlev.simon.util.{RenderUtil, MimeUtil}
 import collection.mutable
@@ -23,7 +22,6 @@ class DynamicMethodHandler extends RequestHandler {
   override def handleRequest(request: HttpRequest): Option[HttpResponse] = {
     val r = request.request
 
-    println(r)
     if (ctx.isDefinedAt((r.method, r.resource))) {
       Some(HttpResponse(
         200,
@@ -31,7 +29,7 @@ class DynamicMethodHandler extends RequestHandler {
         runRoute(request, (r.method, r.resource))
       ))
     } else {
-      return Some(HttpResponse(404, MimeUtil.HTML, RenderUtil.notFound()))
+      Some(HttpResponse(404, MimeUtil.HTML, RenderUtil.notFound()))
     }
   }
 
@@ -43,11 +41,9 @@ class DynamicMethodHandler extends RequestHandler {
   def head(path: String)(f: =>Any) = ctx.put(("HEAD", path), x=>f.toString)
 
   def runRoute(request: HttpRequest, route: (String, String)): String = {
-    //var params = request.params
-    //params += "hello" -> "world"
-
     log.debug("Running route {}", route)
-    paramsMap.withValue(mutable.Map("hello" -> "world")) {
+    log.debug("Content-type: " + request.getContentType)
+    paramsMap.withValue(mutable.Map(request.params.toSeq: _*)) {
       ctx(route)()
     }
   }

@@ -1,8 +1,8 @@
 package com.xorlev.simon.handlers
 
-import com.xorlev.simon.model.HttpResponse
+import com.xorlev.simon.model.{HttpRequest, HttpResponse}
 import com.xorlev.simon.RequestHandler
-import com.xorlev.simon.RequestParser.{HeaderLine, HttpRequest}
+import com.xorlev.simon.RequestParser.HeaderLine
 import java.io.{FileInputStream, File}
 import com.xorlev.simon.util.{HeaderUtil, RenderUtil, MimeUtil}
 import com.google.common.hash.Hashing
@@ -45,7 +45,7 @@ class StaticFileRequestHandler(context: String, basePath: String) extends Reques
       }
 
     } catch {
-      case ex:Throwable => Some(HttpResponse(500, MimeUtil.processMime("html"), RenderUtil.renderStackTrace(ex)))
+      case ex:Throwable => Some(HttpResponse(500, MimeUtil.HTML, RenderUtil.renderStackTrace(ex)))
       case _ => None
     }
   }
