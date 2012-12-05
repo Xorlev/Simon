@@ -13,6 +13,8 @@ import java.io.InputStream
 object RequestParser extends Loggable {
   case class RequestLine(method: String, resource: String, version: String)
   case class HeaderLine(name: String, value: String)
+  val requestPattern = "(GET|POST|PUT|DELETE|OPTIONS|HEAD) (.*) (HTTP/1.0|HTTP/1.1)".r
+  val paramPattern = "[?&]([^=]+)=([^=&]+)".r
 
   def parseHeaders(headers: Iterator[String]): Option[List[(String, String)]] = {
     try {
@@ -46,18 +48,13 @@ object RequestParser extends Loggable {
   }
 
   def parseRequestLine(line: String): Option[(RequestLine, Map[String, String])] = {
-    val lineMatcher = "(GET|POST|PUT|DELETE|OPTIONS|HEAD) (.*) HTTP/(1.0|1.1)".r
-      .pattern
-      .matcher(line)
-
-    if (lineMatcher.matches) {
-      val (method, resource, version) = (lineMatcher.group(1), lineMatcher.group(2), "HTTP/" + lineMatcher.group(3))
-      val parsedParams = getParams(resource).get
-
-      return Some((RequestLine(method, parsedParams._1, version), parsedParams._2))
+    line match {
+      case requestPattern(method, resource, version) => {
+        val params = paramPattern.findAllIn(resource).matchData.map(_.subgroups).map(g => g(0) -> g(1))
+        Some((RequestLine(method, resource.split("\\?")(0), version), params.toMap))
+      }
+      case _ => None
     }
-
-    None
   }
 
   def getParams(request: String): Option[(String, Map[String,String])] = {
