@@ -56,22 +56,4 @@ object RequestParser extends Loggable {
       case _ => None
     }
   }
-
-  def getParams(request: String): Option[(String, Map[String,String])] = {
-    try {
-      val parsedResource = request.trim.split("\\?", 2)
-      if (parsedResource.size > 1 && parsedResource(1).size > 0) {
-        val paramMap = parsedResource(1)
-          .split('&')
-          .map {x => x.split("=", 2)}
-          .collect {case x => (x(0), x(1))}
-          .toMap
-
-        return Some((parsedResource(0), paramMap))
-      }
-      Some(parsedResource(0), Map.empty)
-    } catch {
-      case ex:Throwable => println(ex);None
-    }
-  }
 }
