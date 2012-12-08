@@ -109,8 +109,7 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
         "Content-Type: " + response.mimeType +"",
         "Content-length: " + inputStream.available,
         "Date: " + HeaderUtil.now(),
-        "Server: Simon/" + VersionUtil.getVersionString,
-        "X-XSS-Protection: 1; mode=block"
+        "Server: Simon/" + VersionUtil.getVersionString
       )
       headers.appendAll(response.extraHeaders.map{ it => it.name + ": " + it.value})
       headers.append("Connection: close")
