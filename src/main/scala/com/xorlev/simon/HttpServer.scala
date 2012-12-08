@@ -102,6 +102,36 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
       sock.close()
     }
 
+    def handleKeepAliveRequest(sock: Socket) {
+      val is = sock.getInputStream
+      val os = sock.getOutputStream
+      sock.setSoTimeout(3000)
+      while(is.available() != -1) {
+        val req = RequestParser.decodeRequest(is)
+        log.info("Parsed request {}", req)
+
+        val resp = try {
+          req.flatMap {
+            r =>
+              RequestMapper.getHandler(r.request.resource).handleRequest(r)
+          }.getOrElse {
+            HttpResponse(400, "text/html", new ByteArrayInputStream("<h2>Bad Request</h2>".getBytes))
+          }
+        } catch {
+          case ex:Throwable => HttpResponse(500, "text/html", new ByteArrayInputStream(RenderUtil.renderStackTrace(ex).getBytes))
+        }
+
+        log.debug("Response: {}", resp)
+        writeContent(os, resp)
+        os.flush()
+
+        //        if (req.get.headers("Keep-Alive")
+      }
+      os.close()
+      sock.close()
+    }
+
+
     def writeContent(outputStream: OutputStream, response: HttpResponse) {
       val inputStream = response.response
       val headers = ListBuffer(
