@@ -40,8 +40,6 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
     try {
       while(running) {
         val sock = acceptSocket(serverSocket)
-        m.mark()
-        log.trace("Accepted socket {}", sock.getRemoteSocketAddress)
 
         tp.submit(new SocketConnectionHandler(sock))
       }
@@ -53,8 +51,8 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
 
   def acceptSocket(serverSocket: ServerSocket):Socket = {
     val sock = serverSocket.accept()
-    sock.setReuseAddress(true)
-    sock.setKeepAlive(false)
+    log.trace("Accepted socket {}", sock.getRemoteSocketAddress)
+    m.mark()
 
     sock
   }
