@@ -44,7 +44,7 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
         m.mark()
         log.trace("Accepted socket {}", sock.getRemoteSocketAddress)
 
-        tp.submit(new ConnectionHandler(sock))
+        tp.submit(new SocketConnectionHandler(sock))
         //new Handler(sock).run()
       }
     } catch {

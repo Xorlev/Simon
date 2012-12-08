@@ -9,7 +9,7 @@ import collection.mutable.ListBuffer
 import java.nio.channels.Channels
 import com.google.common.io.ByteStreams
 
-class ConnectionHandler(socket: Socket) extends Runnable with Instrumented with Loggable {
+class SocketConnectionHandler(socket: Socket) extends Runnable with Instrumented with Loggable {
   def run() {
     handleRequest(socket)
   }
