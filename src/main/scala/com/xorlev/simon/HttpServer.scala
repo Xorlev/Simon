@@ -57,11 +57,11 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
     sock
   }
 
-  def stopServer() = {
+  def stopServer() {
     log.info("Shutting down...")
     running = false
 
-    tp.awaitTermination(5, TimeUnit.SECONDS)
+    tp.awaitTermination(1, TimeUnit.SECONDS)
     tp.shutdown()
 
     log.info("Closing listener")
