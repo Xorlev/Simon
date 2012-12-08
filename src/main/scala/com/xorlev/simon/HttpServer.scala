@@ -102,7 +102,7 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
       sock.close()
     }
 
-    def writeContent(os: OutputStream, response: HttpResponse) {
+    def writeContent(outputStream: OutputStream, response: HttpResponse) {
       val inputStream = response.response
       val headers = ListBuffer(
         "HTTP/1.1 " + HttpCodeUtil.lookupCode(response.responseCode),
@@ -114,10 +114,10 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
       headers.appendAll(response.extraHeaders.map{ it => it.name + ": " + it.value})
       headers.append("Connection: close")
 
-      os.write((headers.mkString("\r\n") + "\r\n\r\n").getBytes)
+      outputStream.write((headers.mkString("\r\n") + "\r\n\r\n").getBytes)
 
-      ByteStreams.copy(inputStream, os)
-      os.flush()
+      ByteStreams.copy(inputStream, outputStream)
+      outputStream.flush()
       inputStream.close()
     }
 
