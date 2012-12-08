@@ -146,18 +146,23 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
 
       outputStream.write((headers.mkString("\r\n") + "\r\n\r\n").getBytes)
 
-      ByteStreams.copy(inputStream, outputStream)
+      processInputStream(inputStream, outputStream)
       outputStream.flush()
       inputStream.close()
     }
 
+    /**
+     * If file input stream, uses the kernel to do a sendfile() instead of reading into JVM
+     * @param in
+     * @param out
+     */
     def processInputStream(in: InputStream, out: OutputStream) {
       in match {
         case in:FileInputStream => {
           val ch = in.getChannel
           ch.transferTo(0, ch.size, Channels.newChannel(out))
         }
-        case in:InputStream => out.write(ByteStreams.toByteArray(in))
+        case in:InputStream => ByteStreams.copy(in, out)
       }
     }
   }
