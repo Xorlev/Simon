@@ -116,8 +116,7 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
 
       os.write((headers.mkString("\r\n") + "\r\n\r\n").getBytes)
 
-
-      os.write(ByteStreams.toByteArray(inputStream))
+      ByteStreams.copy(inputStream, os)
       os.flush()
       inputStream.close()
     }
