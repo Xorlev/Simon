@@ -15,6 +15,7 @@ class SocketConnectionHandler(socket: Socket) extends Runnable with Instrumented
   }
 
   def handleRequest(sock: Socket) {
+    val start = System.nanoTime()
     sock.setSoTimeout(3000)
     val req = RequestParser.decodeRequest(sock.getInputStream)
     log.info("Parsed request {}", req)
@@ -30,7 +31,7 @@ class SocketConnectionHandler(socket: Socket) extends Runnable with Instrumented
       case ex:Throwable => HttpResponse(500, "text/html", new ByteArrayInputStream(RenderUtil.renderStackTrace(ex).getBytes))
     }
 
-    log.debug("Response: {}", resp)
+    log.debug("Response: {}, {} ms", resp, (System.nanoTime() - start) / 1000000)
     val os = sock.getOutputStream
     writeContent(os, resp)
     os.flush()
