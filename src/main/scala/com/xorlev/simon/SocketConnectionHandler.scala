@@ -2,36 +2,30 @@ package com.xorlev.simon
 
 import java.net.Socket
 import com.yammer.metrics.scala.Instrumented
-import model.HttpResponse
+import model.{HttpRequest, HttpResponse}
 import util._
 import java.io.{InputStream, FileInputStream, OutputStream, ByteArrayInputStream}
 import collection.mutable.ListBuffer
 import java.nio.channels.Channels
 import com.google.common.io.ByteStreams
+import java.util.UUID
 
 class SocketConnectionHandler(socket: Socket) extends Runnable with Instrumented with Loggable {
+  val requestId = UUID.randomUUID().toString
+
   def run() {
     handleRequest(socket)
   }
 
   def handleRequest(sock: Socket) {
     val start = System.nanoTime()
-    sock.setSoTimeout(3000)
+
     val req = RequestParser.decodeRequest(sock.getInputStream)
-    log.info("Parsed request {}", req)
+    log.info("({}) Parsed request {}", requestId, req)
 
-    val resp = try {
-      req.flatMap {
-        r =>
-          RequestMapper.getHandler(r.request.resource).handleRequest(r)
-      }.getOrElse {
-        HttpResponse(400, "text/html", new ByteArrayInputStream("<h2>Bad Request</h2>".getBytes))
-      }
-    } catch {
-      case ex:Throwable => HttpResponse(500, "text/html", new ByteArrayInputStream(RenderUtil.renderStackTrace(ex).getBytes))
-    }
+    val resp = getResponse(req)
 
-    log.debug("Response: {}, {} ms", resp, (System.nanoTime() - start) / 1000000)
+    log.debug("(" + requestId +") Response: {}, {} ms", resp, (System.nanoTime() - start) / 1000000)
     val os = sock.getOutputStream
     writeContent(os, resp)
     os.flush()
@@ -45,20 +39,11 @@ class SocketConnectionHandler(socket: Socket) extends Runnable with Instrumented
     sock.setSoTimeout(3000)
     while(is.available() != -1) {
       val req = RequestParser.decodeRequest(is)
-      log.info("Parsed request {}", req)
+      log.info("({}) Parsed request {}", requestId, req)
 
-      val resp = try {
-        req.flatMap {
-          r =>
-            RequestMapper.getHandler(r.request.resource).handleRequest(r)
-        }.getOrElse {
-          HttpResponse(400, "text/html", new ByteArrayInputStream("<h2>Bad Request</h2>".getBytes))
-        }
-      } catch {
-        case ex:Throwable => HttpResponse(500, "text/html", new ByteArrayInputStream(RenderUtil.renderStackTrace(ex).getBytes))
-      }
+      val resp = getResponse(req)
 
-      log.debug("Response: {}", resp)
+      log.debug("({}) Response: {}", requestId, resp)
       writeContent(os, resp)
       os.flush()
     }
@@ -66,8 +51,25 @@ class SocketConnectionHandler(socket: Socket) extends Runnable with Instrumented
     sock.close()
   }
 
+  def getResponse(req: Option[HttpRequest]): HttpResponse = {
+    try {
+      req.flatMap {
+        r =>
+          RequestMapper.getHandler(r.request.resource).handleRequest(r)
+      }.getOrElse {
+        HttpResponse(400, "text/html", new ByteArrayInputStream("<h2>Bad Request</h2>".getBytes))
+      }
+    } catch {
+      case ex:Throwable => HttpResponse(500, "text/html", new ByteArrayInputStream(RenderUtil.renderStackTrace(ex).getBytes))
+    }
+  }
 
-
+  /**
+   * Takes a response object and translates it into a fully-formed HTTP response.
+   * Responsible for generating standard headers
+   * @param outputStream
+   * @param response
+   */
   def writeContent(outputStream: OutputStream, response: HttpResponse) {
     val inputStream = response.response
     val headers = ListBuffer(
