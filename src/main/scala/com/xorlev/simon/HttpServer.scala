@@ -1,5 +1,6 @@
 package com.xorlev.simon
 
+import conf.DispatchConfig
 import java.lang.String
 import java.net.{Socket, SocketException, ServerSocket, InetAddress}
 import util._
@@ -31,6 +32,11 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
 
     serverSocket.setPerformancePreferences(0,1,2)
     serverSocket.setReuseAddress(true)
+  }
+
+  def addDispatchConfig(dispatcher: DispatchConfig): HttpServer = {
+    dispatcher.config()
+    this
   }
 
   def runServer() {
