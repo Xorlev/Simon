@@ -77,9 +77,13 @@ class SocketConnectionHandler(socket: Socket) extends Runnable with Instrumented
       "Content-Type: " + response.mimeType +"",
       "Content-length: " + inputStream.available,
       "Date: " + HeaderUtil.now(),
-      "Server: Simon/" + VersionUtil.getVersionString
+      "Server: " + VersionUtil.getServerString
     )
+
+    // Append all the headers the response needs.
     headers.appendAll(response.extraHeaders.map{ it => it.name + ": " + it.value})
+
+    // We aren't Keep-Alive compatible yet, signal this.
     headers.append("Connection: close")
 
     outputStream.write((headers.mkString("\r\n") + "\r\n\r\n").getBytes)
@@ -91,6 +95,7 @@ class SocketConnectionHandler(socket: Socket) extends Runnable with Instrumented
 
   /**
    * If file input stream, uses the kernel to do a sendfile() instead of reading into JVM
+   * Otherwise, uses efficient stream-to-stream copy
    * @param in
    * @param out
    */

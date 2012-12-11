@@ -12,4 +12,5 @@ object VersionUtil {
   def getVersionMajor: Int = version._1
   def getVersionMinor: Int = version._2
   def getVersionPatch: Int = version._3
+  def getServerString: String = "Simon/" + getVersionString
 }
