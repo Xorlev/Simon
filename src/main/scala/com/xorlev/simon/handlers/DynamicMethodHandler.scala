@@ -43,9 +43,13 @@ class DynamicMethodHandler extends RequestHandler {
   def runRoute(request: HttpRequest, route: (String, String)): String = {
     log.debug("Running route {}", route)
     log.debug("Content-type: " + request.getContentType)
-    paramsMap.withValue(mutable.Map(request.params.toSeq: _*)) {
+    paramsMap.withValue(parseParams(request.params)) {
       ctx(route)()
     }
+  }
+
+  private[this] def parseParams(requestParams: Map[String,String]): mutable.Map[String,String] = {
+    mutable.Map(requestParams.toSeq: _*).withDefaultValue(null)
   }
   
   def doRender(f: =>Any): String = {
