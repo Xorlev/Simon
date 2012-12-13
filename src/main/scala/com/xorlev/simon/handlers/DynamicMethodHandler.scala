@@ -1,7 +1,7 @@
 package com.xorlev.simon.handlers
 
 import com.xorlev.simon.RequestHandler
-import com.xorlev.simon.model.{HttpRequest, HttpResponse}
+import com.xorlev.simon.model.{BadRequest, NotFound, HttpRequest, HttpResponse}
 import collection.mutable.HashMap
 import com.xorlev.simon.util.{RenderUtil, MimeUtil}
 import collection.mutable
@@ -72,8 +72,9 @@ class DynamicMethodHandler extends RequestHandler {
     f match {
       case n:NodeSeq => HttpResponse(200, MimeUtil.HTML, n.toString())
       case n:Array[Byte] => HttpResponse(200, MimeUtil.STREAM, new ByteArrayInputStream(n))
+      case n:String => HttpResponse(200, MimeUtil.PLAIN, n)
       case n:Any if mapper.canSerialize(n.getClass) => HttpResponse(200, MimeUtil.JSON, mapper.writeValueAsString(n))
-      case _ => HttpResponse(400, MimeUtil.HTML, RenderUtil.badRequest())
+      case _ => BadRequest(RenderUtil.badRequest())
     }
   }
 

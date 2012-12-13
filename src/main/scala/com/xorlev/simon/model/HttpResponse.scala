@@ -14,6 +14,11 @@ object Ok {
       HttpResponse(200, "text/html", response, headers)
 }
 
+object BadRequest {
+  def apply(response: InputStream, headers:List[HeaderLine] = List.empty) =
+      HttpResponse(400, "text/html", response, headers)
+}
+
 object NotFound {
   def apply(response: InputStream, headers:List[HeaderLine] = List.empty) =
       HttpResponse(404, "text/html", response, headers)
