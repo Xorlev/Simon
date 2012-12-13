@@ -20,6 +20,8 @@ object MimeUtil {
   ).withDefaultValue("text/plain")
 
   val HTML: String = mimeTypes("html")
+  val STREAM: String = "application/octet-stream"
+  val JSON: String = "application/json"
 
   def processMime(file: File): String = {
     mimeTypes(extension(file.getAbsolutePath))

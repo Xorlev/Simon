@@ -6,6 +6,10 @@ import collection.mutable.HashMap
 import com.xorlev.simon.util.{RenderUtil, MimeUtil}
 import collection.mutable
 import util.DynamicVariable
+import org.codehaus.jackson.map.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import xml.NodeSeq
+import java.io.ByteArrayInputStream
 
 /**
  * 2012-12-02
@@ -13,9 +17,12 @@ import util.DynamicVariable
  */
 
 class DynamicMethodHandler extends RequestHandler {
-  val ctx = new HashMap[(String, String), (Any=>String)]
+  val ctx = new HashMap[(String, String), (Any=>HttpResponse)]
 
   val paramsMap = new DynamicVariable[mutable.Map[String,String]](null)
+
+  val mapper = new ObjectMapper()
+  mapper.registerModule(DefaultScalaModule)
 
   implicit def params: mutable.Map[String, String] = paramsMap.value
 
@@ -23,11 +30,7 @@ class DynamicMethodHandler extends RequestHandler {
     val r = request.request
 
     if (ctx.isDefinedAt((r.method, r.resource))) {
-      Some(HttpResponse(
-        200,
-        MimeUtil.HTML,
-        runRoute(request, (r.method, r.resource))
-      ))
+      Some(runRoute(request, (r.method, r.resource)))
     } else {
       Some(HttpResponse(404, MimeUtil.HTML, RenderUtil.notFound()))
     }
@@ -40,9 +43,9 @@ class DynamicMethodHandler extends RequestHandler {
   def options(path: String)(f: =>Any) = ctx.put(("OPTIONS", path), x=>doRender(f))
   def head(path: String)(f: =>Any) = ctx.put(("HEAD", path), x=>doRender(f))
 
-  def runRoute(request: HttpRequest, route: (String, String)): String = {
+  def runRoute(request: HttpRequest, route: (String, String)): HttpResponse = {
     log.debug("Running route {}", route)
-    log.debug("Content-type: " + request.getContentType)
+    log.debug("Desired Content-type: " + request.getContentType)
     paramsMap.withValue(parseParams(request.params)) {
       ctx(route)()
     }
@@ -51,8 +54,18 @@ class DynamicMethodHandler extends RequestHandler {
   private[this] def parseParams(requestParams: Map[String,String]): mutable.Map[String,String] = {
     mutable.Map(requestParams.toSeq: _*).withDefaultValue(null)
   }
-  
-  def doRender(f: =>Any): String = {
-    f.toString
+
+  /**
+   * Render pipeline, responsible for determining response format.
+   * @param f is a user-defined closure to generate a response
+   * @return HttpResponse(code, mime, data)
+   */
+  private[this] def doRender(f: =>Any): HttpResponse = {
+    f match {
+      case n:NodeSeq => HttpResponse(200, MimeUtil.HTML, n.toString())
+      case n:Array[Byte] => HttpResponse(200, MimeUtil.STREAM, new ByteArrayInputStream(n))
+      case n:Any if mapper.canSerialize(n.getClass) => HttpResponse(200, MimeUtil.JSON, mapper.writeValueAsString(n))
+      case _ => HttpResponse(400, MimeUtil.HTML, RenderUtil.badRequest())
+    }
   }
 }

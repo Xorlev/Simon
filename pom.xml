@@ -62,9 +62,9 @@
             <version>2.1.3</version>
         </dependency>
         <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <version>1.10</version>
+            <groupId>com.fasterxml</groupId>
+            <artifactId>jackson-module-scala</artifactId>
+            <version>1.9.3</version>
         </dependency>
         <!-- testing -->
         <!--<dependency>-->
