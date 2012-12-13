@@ -16,8 +16,18 @@ class TestHandler(basePath: String) extends DynamicMethodHandler {
       <body>
         <h1>Test</h1>
         {new Date()}
-        {params("hello")}
+        {params("hello")}<br />
+        {request.headers}
       </body>
     </html>
+  }
+
+  get("/json") {
+    List(1,2,3,4)
+  }
+
+
+  post("/json") {
+    List(1,2,3,4).reverse
   }
 }
