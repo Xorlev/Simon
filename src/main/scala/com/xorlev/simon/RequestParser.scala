@@ -1,9 +1,11 @@
 package com.xorlev.simon
 
 import model.HttpRequest
-import scala.io.Source
+import io.{BufferedSource, Source}
 import util.Loggable
-import java.io.InputStream
+import collection.mutable.ListBuffer
+import java.io.{InputStreamReader, BufferedReader, InputStream}
+import java.nio.{CharBuffer, ByteBuffer}
 
 /**
  * 2012-11-25
@@ -23,27 +25,45 @@ object RequestParser extends Loggable {
         (name, value)
       }.toList)
     } catch {
-      case ex: Throwable => None
+      case ex: Throwable => println(ex);None
     }
   }
 
-  def getBody(lines: Iterator[String]): Option[String] = {
-    Some("")
-    //Some(lines.foldLeft("")(_+_))
+  def getBody(headers: List[(String,String)], reader: BufferedReader): Option[String] = {
+    val len = Integer.parseInt(headers.find(_._1 == "Content-Length").get._2)
+    val buf = CharBuffer.allocate(len)
+
+    reader.read(buf)
+    buf.flip()
+    Some(buf.toString)
   }
 
   def decodeRequest(stream: InputStream): Option[HttpRequest] = {
     log.debug("Decoding...")
-    val lines = Source.fromInputStream(stream).getLines()
+
+
+//
+    val reader = new BufferedReader(new InputStreamReader(stream))
+    val lb = new ListBuffer[String]
+    var read = true
+    while(read) {
+      val line = reader.readLine()
+
+      if (line == "") {
+        read = false
+      } else {
+        lb.append(line)
+      }
+    }
 
     try {
       for (
-        (req, params) <- parseRequestLine(lines.next());
-        headers <- parseHeaders(lines.takeWhile({ s => s.contains(':') }));
-        body <- getBody(lines)
+        (req, params) <- parseRequestLine(lb.head);
+        headers <- parseHeaders(lb.drop(1).iterator);
+        body <- getBody(headers, reader)
         ) yield HttpRequest(req, headers.toMap, params, body)
     } catch {
-      case ex:Throwable => println(ex); None
+      case ex:Throwable => None
     }
   }
 
