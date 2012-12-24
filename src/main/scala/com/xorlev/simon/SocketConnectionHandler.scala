@@ -10,6 +10,7 @@ import collection.mutable.ListBuffer
 import java.nio.channels.Channels
 import com.google.common.io.ByteStreams
 import java.util.UUID
+import scala.util.Random
 
 class SocketConnectionHandler(socket: Socket) extends Runnable with Instrumented with Loggable {
   val requestId = UUID.randomUUID().toString
@@ -79,6 +80,7 @@ class SocketConnectionHandler(socket: Socket) extends Runnable with Instrumented
       "Content-length: " + inputStream.available,
       "Date: " + HeaderUtil.now(),
       "Server: " + VersionUtil.getServerString
+      //"Transfer-Encoding: chunked"
     )
 
     // Append all the headers the response needs.
@@ -108,5 +110,30 @@ class SocketConnectionHandler(socket: Socket) extends Runnable with Instrumented
       }
       case in:InputStream => ByteStreams.copy(in, out)
     }
+  }
+
+  /**
+   * Chunked output -- currently unused. Implements octet-based chunk encoding.
+   * @param in
+   * @param out
+   */
+  def chunkedOutput(in: InputStream, out: OutputStream) {
+    while(in.available() > 0) {
+      var size = Random.nextInt(11)
+      if (size == 0) size = 1
+      if (size > in.available()) size = in.available()
+      println("Chunking " + size + " bytes")
+
+      out.write((Integer.toHexString(size) + "\r\n").getBytes)
+
+      1 to size foreach { _ =>
+        out.write(in.read())
+      }
+
+      out.write("\r\n".getBytes)
+    }
+
+
+    out.write("0\r\n\r\n".getBytes)
   }
 }
