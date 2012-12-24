@@ -23,6 +23,7 @@ object MimeUtil {
   val STREAM: String = "application/octet-stream"
   val JSON: String = "application/json"
   val PLAIN: String = "text/plain"
+  val FORM: String = "application/x-www-form-urlencoded"
 
   def processMime(file: File): String = {
     mimeTypes(extension(file.getAbsolutePath))
