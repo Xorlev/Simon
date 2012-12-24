@@ -28,6 +28,7 @@ class TestHandler(basePath: String) extends DynamicMethodHandler {
 
 
   post("/json") {
+    if (params("hello") != "world") halt(400, "Testing Halt")
     List(1,2,3,4).reverse
   }
 }

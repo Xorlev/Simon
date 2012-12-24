@@ -60,7 +60,7 @@ class DynamicMethodHandler extends RequestHandler {
         try {
           ctx(route)()
         } catch {
-          case ex:HaltedHandlerException => HttpResponse(ex.code, MimeUtil.HTML, RenderUtil.renderStackTrace(ex))
+          case ex:HaltedHandlerException => HttpResponse(ex.code, MimeUtil.HTML, ex.haltMessage)
         }
       }
     }
@@ -87,6 +87,7 @@ class DynamicMethodHandler extends RequestHandler {
   }
 
   def halt(code:Int) = throw new HaltedHandlerException(code)
+  def halt(code:Int, msg:String) = throw new HaltedHandlerException(code, msg)
 
   def get(path: String)(f: =>Any) = ctx.put(("GET", path), x=>doRender(f))
   def post(path: String)(f: =>Any) = ctx.put(("POST", path), x=>doRender(f))
