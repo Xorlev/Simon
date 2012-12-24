@@ -36,6 +36,7 @@ class StaticFileRequestHandler(context: String, basePath: String) extends Reques
   val contextPattern = ("^" + context).r
   registerFilter({ contextPattern.replaceFirstIn(_, "") })
   registerFilter({ handleEmptyPath(_) })
+  registerFilter({ removeParentNavigation(_) })
 
   def handleRequest(request: HttpRequest):Option[HttpResponse] = {
     try {
@@ -73,6 +74,10 @@ class StaticFileRequestHandler(context: String, basePath: String) extends Reques
       case 0 => "index.html"
       case _ => path
     }
+  }
+
+  def removeParentNavigation(path: String): String = {
+    path.replaceAll("..", ".")
   }
 
   def openFile(path: String): Option[File] = {
