@@ -1,7 +1,7 @@
 package com.xorlev.simon.handlers
 
-import com.xorlev.simon.RequestHandler
 import com.xorlev.simon.model.HttpRequest
+import com.xorlev.simon.request.RequestHandler
 
 /**
  * 2012-12-02

@@ -1,8 +1,8 @@
 package com.xorlev.simon.handlers
 
-import com.xorlev.simon.RequestHandler
 import com.xorlev.simon.model.{HttpRequest, HttpResponse}
 import com.xorlev.simon.util.{RenderUtil, MimeUtil}
+import com.xorlev.simon.request.RequestHandler
 
 /**
  * 2012-11-29

@@ -1,6 +1,5 @@
 package com.xorlev.simon.handlers
 
-import com.xorlev.simon.RequestHandler
 import com.xorlev.simon.model._
 import collection.mutable.HashMap
 import com.xorlev.simon.util.{RenderUtil, MimeUtil}
@@ -13,6 +12,7 @@ import java.io.ByteArrayInputStream
 import com.xorlev.simon.model.HttpRequest
 import com.xorlev.simon.model.HttpResponse
 import scala.Some
+import com.xorlev.simon.request.RequestHandler
 
 /**
  * 2012-12-02

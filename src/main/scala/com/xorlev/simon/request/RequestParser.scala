@@ -1,11 +1,11 @@
-package com.xorlev.simon
+package com.xorlev.simon.request
 
-import model.HttpRequest
 import io.{BufferedSource, Source}
-import util.Loggable
 import collection.mutable.ListBuffer
 import java.io.{InputStreamReader, BufferedReader, InputStream}
 import java.nio.{CharBuffer, ByteBuffer}
+import com.xorlev.simon.util.Loggable
+import com.xorlev.simon.model.HttpRequest
 
 /**
  * 2012-11-25

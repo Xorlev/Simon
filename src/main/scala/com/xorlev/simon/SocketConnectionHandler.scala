@@ -3,6 +3,7 @@ package com.xorlev.simon
 import java.net.Socket
 import com.yammer.metrics.scala.Instrumented
 import model.{HttpRequest, HttpResponse}
+import request.{RequestParser, RequestMapper}
 import util._
 import java.io.{InputStream, FileInputStream, OutputStream, ByteArrayInputStream}
 import collection.mutable.ListBuffer

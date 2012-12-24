@@ -16,7 +16,8 @@
 
 package com.xorlev.simon.model
 
-import com.xorlev.simon.RequestParser.{HeaderLine, RequestLine}
+import com.xorlev.simon.request.RequestParser
+import RequestParser.{HeaderLine, RequestLine}
 import com.xorlev.simon.util.HeaderUtil
 
 /**
@@ -27,5 +28,11 @@ import com.xorlev.simon.util.HeaderUtil
 case class HttpRequest(request: RequestLine, headers: Map[String, String], params: Map[String,String] = Map(), body: String) {
   def getContentType: String = {
     HeaderUtil.parseAccept(headers.get("Accept").get)(0)
+  }
+  def getContentLength: Int = {
+    headers.get("Content-Length") match {
+      case Some(x) => Integer.parseInt(x)
+      case None => 0
+    }
   }
 }

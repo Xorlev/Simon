@@ -1,7 +1,8 @@
 package com.xorlev.simon.model
 
 import java.io.InputStream
-import com.xorlev.simon.RequestParser.HeaderLine
+import com.xorlev.simon.request.RequestParser
+import RequestParser.HeaderLine
 
 /**
  * 2012-11-28

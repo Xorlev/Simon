@@ -1,9 +1,9 @@
-package com.xorlev.simon
+package com.xorlev.simon.request
 
 import java.io.{ByteArrayInputStream, InputStream}
-import model.{HttpRequest, HttpResponse}
-import util.Loggable
 import collection.mutable.ListBuffer
+import com.xorlev.simon.util.Loggable
+import com.xorlev.simon.model.{HttpResponse, HttpRequest}
 
 
 abstract class RequestHandler extends Loggable {

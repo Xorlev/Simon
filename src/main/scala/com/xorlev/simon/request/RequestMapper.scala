@@ -1,8 +1,7 @@
-package com.xorlev.simon
+package com.xorlev.simon.request
 
-import handlers.{ErrorHandler, StaticFileRequestHandler}
 import java.lang.String
-import collection.JavaConversions.MutableMapWrapper
+import com.xorlev.simon.handlers.ErrorHandler
 
 /**
  * 2012-12-02

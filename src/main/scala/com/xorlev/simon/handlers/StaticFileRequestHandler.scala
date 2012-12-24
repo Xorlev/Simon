@@ -1,13 +1,14 @@
 package com.xorlev.simon.handlers
 
 import com.xorlev.simon.model.{HttpRequest, HttpResponse}
-import com.xorlev.simon.RequestHandler
-import com.xorlev.simon.RequestParser.HeaderLine
+import com.xorlev.simon.request.{RequestParser, RequestHandler}
+import RequestParser.HeaderLine
 import java.io.{FileInputStream, File}
 import com.xorlev.simon.util.{HeaderUtil, RenderUtil, MimeUtil}
 import com.google.common.hash.Hashing
 import com.google.common.net.HttpHeaders
 import java.util.regex.Pattern
+import com.xorlev.simon.request.RequestHandler
 
 /**
  * 2012-11-26

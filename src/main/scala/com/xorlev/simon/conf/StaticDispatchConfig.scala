@@ -1,7 +1,7 @@
 package com.xorlev.simon.conf
 
-import com.xorlev.simon.RequestMapper
 import com.xorlev.simon.handlers.TestHandler
+import com.xorlev.simon.request.RequestMapper
 
 /**
  * 2012-12-10
