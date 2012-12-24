@@ -8,6 +8,7 @@ package com.xorlev.simon.util
 object RenderUtil {
   def notFound(): String = "<h2>404: Not found</h2>"
   def badRequest(): String = "<h2>400: Bad Request</h2>"
+  def unprocessableEntity(): String = "<h2>422: Unprocessable Entity</h2>"
 
   def renderStackTrace(ex: Throwable): String = {
     "<h2>" + ex.toString + "</h2>\n" +

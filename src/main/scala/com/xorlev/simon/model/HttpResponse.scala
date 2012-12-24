@@ -24,6 +24,11 @@ object NotFound {
       HttpResponse(404, "text/html", response, headers)
 }
 
+object UnprocessableEntity {
+  def apply(response: InputStream, headers:List[HeaderLine] = List.empty) =
+      HttpResponse(422, "text/html", response, headers)
+}
+
 object InternalServerError {
   def apply(response: InputStream, headers:List[HeaderLine] = List.empty) =
       HttpResponse(500, "text/html", response, headers)
