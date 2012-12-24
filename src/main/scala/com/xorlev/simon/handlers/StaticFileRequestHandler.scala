@@ -27,6 +27,7 @@ import java.util.regex.Pattern
 import com.xorlev.simon.request.RequestHandler
 
 /**
+ * Translates requests into filesystem requests.
  * 2012-11-26
  * @author Michael Rose <elementation@gmail.com>
  */

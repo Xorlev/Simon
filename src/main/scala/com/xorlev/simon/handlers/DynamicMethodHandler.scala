@@ -31,6 +31,8 @@ import scala.Some
 import com.xorlev.simon.request.RequestHandler
 
 /**
+ * Dynamic App handler
+ * Implements a Sinatra-like API to develop applications on
  * 2012-12-02
  * @author Michael Rose <elementation@gmail.com>
  */

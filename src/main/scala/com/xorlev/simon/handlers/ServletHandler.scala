@@ -20,6 +20,7 @@ import com.xorlev.simon.model.HttpRequest
 import com.xorlev.simon.request.RequestHandler
 
 /**
+ * Handler to translate requests to the Servlet API
  * 2012-12-02
  * @author Michael Rose <elementation@gmail.com>
  */
