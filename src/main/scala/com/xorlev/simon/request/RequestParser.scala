@@ -6,6 +6,7 @@ import java.io.{InputStreamReader, BufferedReader, InputStream}
 import java.nio.{CharBuffer, ByteBuffer}
 import com.xorlev.simon.util.{MimeUtil, Loggable}
 import com.xorlev.simon.model.HttpRequest
+import java.net.URLDecoder
 
 /**
  * 2012-11-25
@@ -84,7 +85,7 @@ object RequestParser extends Loggable {
 
   def extractBodyParams(req: RequestLine, headers: List[(String, String)], body: String): Option[Map[String, String]] = req.method match {
     case "POST" | "PUT" => headers.find(_._1 == "Content-Type").map(_._2) match {
-      case Some(MimeUtil.FORM) => Some(bodyParamPattern.findAllIn(body).matchData.map(_.subgroups).map(g => g(0) -> g(1)).toMap)
+      case Some(MimeUtil.FORM) => Some(bodyParamPattern.findAllIn(URLDecoder.decode(body, "UTF-8")).matchData.map(_.subgroups).map(g => g(0) -> g(1)).toMap)
       case None => Some(Map.empty)
     }
     case _ => Some(Map.empty)
