@@ -10,6 +10,9 @@ import org.codehaus.jackson.map.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import xml.NodeSeq
 import java.io.ByteArrayInputStream
+import com.xorlev.simon.model.HttpRequest
+import com.xorlev.simon.model.HttpResponse
+import scala.Some
 
 /**
  * 2012-12-02
@@ -54,7 +57,11 @@ class DynamicMethodHandler extends RequestHandler {
     log.debug("Desired Content-type: " + request.getContentType)
     paramsMap.withValue(parseParams(request.params)) {
       requestVar.withValue(request) {
-        ctx(route)()
+        try {
+          ctx(route)()
+        } catch {
+          case ex:HaltedHandlerException => HttpResponse(ex.code, MimeUtil.HTML, RenderUtil.renderStackTrace(ex))
+        }
       }
     }
   }
@@ -70,13 +77,16 @@ class DynamicMethodHandler extends RequestHandler {
    */
   private[this] def doRender(f: =>Any): HttpResponse = {
     f match {
+      case n:HttpResponse => n
       case n:NodeSeq => HttpResponse(200, MimeUtil.HTML, n.toString())
       case n:Array[Byte] => HttpResponse(200, MimeUtil.STREAM, new ByteArrayInputStream(n))
       case n:String => HttpResponse(200, MimeUtil.PLAIN, n)
       case n:Any if mapper.canSerialize(n.getClass) => HttpResponse(200, MimeUtil.JSON, mapper.writeValueAsString(n))
-      case _ => BadRequest(RenderUtil.badRequest())
+      case _ => UnprocessableEntity(RenderUtil.unprocessableEntity())
     }
   }
+
+  def halt(code:Int) = throw new HaltedHandlerException(code)
 
   def get(path: String)(f: =>Any) = ctx.put(("GET", path), x=>doRender(f))
   def post(path: String)(f: =>Any) = ctx.put(("POST", path), x=>doRender(f))
