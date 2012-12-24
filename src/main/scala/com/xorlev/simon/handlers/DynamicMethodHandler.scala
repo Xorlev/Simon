@@ -1,7 +1,7 @@
 package com.xorlev.simon.handlers
 
 import com.xorlev.simon.RequestHandler
-import com.xorlev.simon.model.{BadRequest, NotFound, HttpRequest, HttpResponse}
+import com.xorlev.simon.model._
 import collection.mutable.HashMap
 import com.xorlev.simon.util.{RenderUtil, MimeUtil}
 import collection.mutable

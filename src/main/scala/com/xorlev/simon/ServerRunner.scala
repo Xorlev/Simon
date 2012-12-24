@@ -1,10 +1,7 @@
 package com.xorlev.simon
 
 import conf.StaticDispatchConfig
-import handlers.{TestHandler, StaticFileRequestHandler}
 import util.Loggable
-import org.yaml.snakeyaml.Yaml
-import java.io.{IOException, FileInputStream}
 
 
 /**

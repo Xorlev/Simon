@@ -8,7 +8,6 @@ import java.util.concurrent.{TimeUnit, Executors}
 import com.yammer.metrics.scala.Instrumented
 import sun.misc.{Signal, SignalHandler}
 
-
 /**
  * 2012-11-25
  * @author Michael Rose <elementation@gmail.com>
