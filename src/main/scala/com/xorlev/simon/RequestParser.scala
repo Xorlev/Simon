@@ -30,19 +30,21 @@ object RequestParser extends Loggable {
   }
 
   def getBody(headers: List[(String,String)], reader: BufferedReader): Option[String] = {
-    val len = Integer.parseInt(headers.find(_._1 == "Content-Length").get._2)
+    val len = headers.find(_._1 == "Content-Length").map(_._2) match {
+      case Some(x) => Integer.parseInt(x)
+      case None => 0
+    }
+
     val buf = CharBuffer.allocate(len)
 
     reader.read(buf)
-    buf.flip()
-    Some(buf.toString)
+    Some(buf.flip().toString)
   }
 
   def decodeRequest(stream: InputStream): Option[HttpRequest] = {
     log.debug("Decoding...")
 
 
-//
     val reader = new BufferedReader(new InputStreamReader(stream))
     val lb = new ListBuffer[String]
     var read = true
