@@ -24,6 +24,7 @@ import com.xorlev.simon.model.{HttpResponse, HttpRequest}
 
 abstract class RequestHandler extends Loggable {
   var filterList: ListBuffer[(String) => String] = ListBuffer()
+  val requestParams = new ThreadLocal[Map[String, String]]()
 
   def handleRequest(request: HttpRequest): Option[HttpResponse]
 

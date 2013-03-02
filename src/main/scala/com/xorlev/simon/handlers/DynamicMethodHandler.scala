@@ -17,7 +17,7 @@
 package com.xorlev.simon.handlers
 
 import com.xorlev.simon.model._
-import collection.mutable.HashMap
+import collection.mutable.{ListBuffer, HashMap}
 import com.xorlev.simon.util.{RenderUtil, MimeUtil}
 import collection.mutable
 import util.DynamicVariable
@@ -28,24 +28,25 @@ import java.io.ByteArrayInputStream
 import com.xorlev.simon.model.HttpRequest
 import com.xorlev.simon.model.HttpResponse
 import scala.Some
-import com.xorlev.simon.request.RequestHandler
+import com.xorlev.simon.request.{SinatraPathPatternParser, PathPattern, RequestHandler}
+import util.matching.Regex
 
 /**
  * Dynamic App handler
- * Implements a Sinatra-like API to develop applications on
+ * Implements a Sinatra-like API to develop applications
  * 2012-12-02
  * @author Michael Rose <elementation@gmail.com>
  */
 
 class DynamicMethodHandler extends RequestHandler {
-  val ctx = new HashMap[(String, String), (Any=>HttpResponse)]
+  var routes = Vector[(String, PathPattern, HttpRequest => HttpResponse)]()
   val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
-  val paramsMap = new DynamicVariable[mutable.Map[String,String]](null)
+  val paramsMap = new DynamicVariable[Map[String,_]](null)
   val requestVar = new DynamicVariable[HttpRequest](null)
 
-  implicit def params: mutable.Map[String, String] = paramsMap.value
+  implicit def params: Map[String, _] = paramsMap.value
   implicit def request: HttpRequest = requestVar.value
 
 
@@ -57,30 +58,71 @@ class DynamicMethodHandler extends RequestHandler {
   override def handleRequest(request: HttpRequest): Option[HttpResponse] = {
     val r = request.request
 
-    if (ctx.isDefinedAt((r.method, r.resource))) {
-      Some(runRoute(request, (r.method, r.resource)))
-    } else {
-      Some(NotFound(RenderUtil.notFound()))
+//    if (ctx.isDefinedAt((r.method, r.resource))) {
+//      //Some(runRoute(request, (r.method, r.resource)))
+//    } else {
+//      Some(NotFound(RenderUtil.notFound()))
+//    }
+
+    log.debug("Finding routes for {}, {}", r, routes)
+    var response:Option[HttpResponse] = None
+    routes.foreach { x =>
+      println(x._1 + x._2.toString)
+      println(x._2.apply(r.resource))
+      println(x._2.apply(r.resource).isDefined && x._1 == r.method)
+      if (x._2.apply(r.resource).isDefined && x._1 == r.method) {
+        try {
+          response = Some(runRoute(request, extractParams(x._2.apply(r.resource).getOrElse(Map.empty)), x._3))
+        } catch {
+          case e:Throwable => {
+            log.error("Error processing callback", e)
+            response = Some(HttpResponse(500, MimeUtil.HTML, RenderUtil.renderStackTrace(e)))
+          }
+        }
+      }
     }
+
+    response
+
+//    routes.foreach {
+//
+//    }
+//    routes.collectFirst {
+//      case (method, regex, callback) if method == r.method && regex.apply(r.resource).isDefined => {
+//          log.debug("Running route {}", r.resource)
+//          Some(runRoute(request, extractParams(regex.apply(r.resource).getOrElse(Map.empty)), callback))
+//        }
+//      case _ => {
+//        log.error("WTF")
+//        None
+//      }
+//    }.getOrElse(Some(NotFound(RenderUtil.notFound())))
   }
 
   /**
-   * Responsible for matching the route and executing it with the proper DynamicVariables instantiated
+   * Responsible for executing a callback with the proper DynamicVariables instantiated
    * @param request
-   * @param route
+   * @param routeParams
+   * @param callback
    * @return
    */
-  def runRoute(request: HttpRequest, route: (String, String)): HttpResponse = {
-    log.debug("Running route {}", route)
+  def runRoute(request: HttpRequest, routeParams: Map[String,String], callback: HttpRequest => HttpResponse): HttpResponse = {
     log.debug("Desired Content-type: " + request.getContentType)
-    paramsMap.withValue(parseParams(request.params)) {
+    val params = routeParams ++ request.params
+    paramsMap.withValue(params) {
       requestVar.withValue(request) {
         try {
-          ctx(route)()
+          callback(request)
         } catch {
           case ex:HaltedHandlerException => HttpResponse(ex.code, MimeUtil.HTML, ex.haltMessage)
         }
       }
+    }
+  }
+
+  private[this] def extractParams(params: Map[_, _]): Map[String,String] = {
+    params.map { xs =>
+      xs._1.toString -> xs._2.asInstanceOf[ListBuffer[_]].head.toString
     }
   }
 
@@ -107,10 +149,21 @@ class DynamicMethodHandler extends RequestHandler {
   def halt(code:Int) = throw new HaltedHandlerException(code)
   def halt(code:Int, msg:String) = throw new HaltedHandlerException(code, msg)
 
-  def get(path: String)(f: =>Any) = ctx.put(("GET", path), x=>doRender(f))
-  def post(path: String)(f: =>Any) = ctx.put(("POST", path), x=>doRender(f))
-  def put(path: String)(f: =>Any) = ctx.put(("PUT", path), x=>doRender(f))
-  def delete(path: String)(f: =>Any) = ctx.put(("DELETE", path), x=>doRender(f))
-  def options(path: String)(f: =>Any) = ctx.put(("OPTIONS", path), x=>doRender(f))
-  def head(path: String)(f: =>Any) = ctx.put(("HEAD", path), x=>doRender(f))
+  def get(path: String)(f: =>Any) = addHandler("GET", path, f)
+  def post(path: String)(f: =>Any) = addHandler("POST", path, f)
+  def put(path: String)(f: =>Any) = addHandler("PUT", path, f)
+  def delete(path: String)(f: =>Any) = addHandler("DELETE", path, f)
+  def options(path: String)(f: =>Any) = addHandler("OPTIONS", path, f)
+  def head(path: String)(f: =>Any) = addHandler("HEAD", path, f)
+
+  private[this] def addHandler(method: String, path: String, f: =>Any) {
+    //ctx.put((method, path), x=>doRender(f))
+    addRoute(method, path)(x=>doRender(f))
+  }
+
+  def addRoute(method: String, path: String)(callback: HttpRequest => HttpResponse) {
+    val regex = SinatraPathPatternParser(path)
+
+    routes = routes :+ (method, regex, callback)
+  }
 }
