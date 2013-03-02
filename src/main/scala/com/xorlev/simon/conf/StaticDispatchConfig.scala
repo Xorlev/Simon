@@ -17,7 +17,7 @@
 package com.xorlev.simon.conf
 
 import com.xorlev.simon.handlers.TestHandler
-import com.xorlev.simon.request.RequestMapper
+import com.xorlev.simon.request.{StaticRequestMapper, RequestMapper}
 
 /**
  * 2012-12-10
@@ -27,6 +27,6 @@ import com.xorlev.simon.request.RequestMapper
 class StaticDispatchConfig extends DispatchConfig {
   def config() {
     //RequestMapper.registerHandler("/", new StaticFileRequestHandler("/", "_site/"))
-    RequestMapper.registerHandler("/", new TestHandler("/"))
+    StaticRequestMapper.registerHandler("/", new TestHandler("/"))
   }
 }

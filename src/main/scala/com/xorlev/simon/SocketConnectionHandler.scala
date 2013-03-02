@@ -19,7 +19,7 @@ package com.xorlev.simon
 import java.net.Socket
 import com.yammer.metrics.scala.Instrumented
 import model.{HttpRequest, HttpResponse}
-import request.{RequestParser, RequestMapper}
+import request.{RegexRequestMapper, StaticRequestMapper, RequestParser, RequestMapper}
 import util._
 import java.io.{InputStream, FileInputStream, OutputStream, ByteArrayInputStream}
 import collection.mutable.ListBuffer
@@ -73,7 +73,7 @@ class SocketConnectionHandler(socket: Socket) extends Runnable with Instrumented
     try {
       req.flatMap {
         r =>
-          RequestMapper.getHandler(r.request.resource).handleRequest(r)
+          StaticRequestMapper.getHandler(r.request.resource).handleRequest(r)
       }.getOrElse {
         HttpResponse(400, "text/html", new ByteArrayInputStream("<h2>Bad Request</h2>".getBytes))
       }
