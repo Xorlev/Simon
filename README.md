@@ -10,7 +10,7 @@ Disclaimer
 ----------
 Quality is not assured by any means, nor is this meant as a production-grade webserver.
 
-Currently single-threaded, blocking I/O.
+Currently multi-threaded, executor-based blocking I/O. Implements HTTP/1.0 only
 
 The Challenge
 -------------
@@ -18,6 +18,7 @@ Write a webserver from the ground up avoiding any existing HTTP-related code. Wr
 
 Goals
 -----
++ HTTP/1.1 support
 + Efficient parsing HTTP headers
 + Dealing with IO myself (not Netty)
 + Writing interesting request handlers (e.x. Sinatra-esque DSL, Scalate/Mustache/etc. view handlers)
