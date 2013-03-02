@@ -32,10 +32,20 @@ class TestHandler(basePath: String) extends DynamicMethodHandler {
       <body>
         <h1>Test</h1>
         {new Date()}
-        {params("hello")}<br />
-        {request.headers}
+        {params.getOrElse("hello", "defaultWorld")}<br />
+        <ul>
+          {
+            request.headers.map { xs =>
+              <li>{xs}</li>
+            }
+          }
+        </ul>
       </body>
     </html>
+  }
+
+  get("/dynamic/:id") {
+    List(params("id"))
   }
 
   get("/json") {
