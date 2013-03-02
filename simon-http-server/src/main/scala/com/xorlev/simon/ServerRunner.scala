@@ -31,7 +31,7 @@ object ServerRunner extends Loggable {
     log.info("Starting Simon HTTP server")
 
     new HttpServer("localhost", 1337)
-      .addDispatchConfig(new StaticDispatchConfig)
+      .addHandler("/", new StaticFileRequestHandler("/", "../_site"))
       .runServer()
   }
 }

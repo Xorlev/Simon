@@ -60,3 +60,12 @@ class TestHandler(basePath: String) extends DynamicMethodHandler {
     List(1,2,3,4).reverse
   }
 }
+object TestHandler extends Loggable{
+  def main(args:Array[String]) {
+    log.info("Starting Simon HTTP server")
+
+    new HttpServer("localhost", 1337)
+      .addHandler("/", new TestHandler("/"))
+      .runServer()
+  }
+}

@@ -36,6 +36,7 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
   var running: Boolean = false
   val tp = Executors.newFixedThreadPool(16)
   val m = metrics.meter("requests", "requests")
+  val requestMapper = StaticRequestMapper
 
   init()
 
@@ -50,8 +51,8 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
     serverSocket.setReuseAddress(true)
   }
 
-  def addDispatchConfig(dispatcher: DispatchConfig): HttpServer = {
-    dispatcher.config()
+  def addHandler(path: String, handler: RequestHandler) = {
+    requestMapper.registerHandler(path, handler)
     this
   }
 
@@ -63,7 +64,7 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
       while(running) {
         val sock = acceptSocket(serverSocket)
 
-        tp.submit(new SocketConnectionHandler(sock))
+        tp.submit(new SocketConnectionHandler(sock, requestMapper))
       }
     } catch {
       case e:SocketException => log.error("Socket error:",e)

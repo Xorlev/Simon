@@ -28,7 +28,7 @@ import com.google.common.io.ByteStreams
 import java.util.UUID
 import scala.util.Random
 
-class SocketConnectionHandler(socket: Socket) extends Runnable with Instrumented with Loggable {
+class SocketConnectionHandler(socket: Socket, requestMapper: RequestMapper) extends Runnable with Instrumented with Loggable {
   val requestId = UUID.randomUUID().toString
 
   def run() {
@@ -73,7 +73,7 @@ class SocketConnectionHandler(socket: Socket) extends Runnable with Instrumented
     try {
       req.flatMap {
         r =>
-          StaticRequestMapper.getHandler(r.request.resource).handleRequest(r)
+          requestMapper.getHandler(r.request.resource).handleRequest(r)
       }.getOrElse {
         HttpResponse(400, "text/html", new ByteArrayInputStream("<h2>Bad Request</h2>".getBytes))
       }
