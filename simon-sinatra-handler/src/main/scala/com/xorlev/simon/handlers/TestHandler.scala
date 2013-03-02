@@ -17,6 +17,8 @@
 package com.xorlev.simon.handlers
 
 import java.util.Date
+import com.xorlev.simon.HttpServer
+import com.xorlev.simon.util.Loggable
 
 /**
  * 2012-12-02

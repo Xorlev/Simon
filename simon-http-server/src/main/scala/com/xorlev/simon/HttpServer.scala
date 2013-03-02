@@ -19,6 +19,7 @@ package com.xorlev.simon
 import conf.DispatchConfig
 import java.lang.String
 import java.net.{Socket, SocketException, ServerSocket, InetAddress}
+import request.{StaticRequestMapper, RequestHandler}
 import util._
 import java.util.concurrent.{TimeUnit, Executors}
 import com.yammer.metrics.scala.Instrumented

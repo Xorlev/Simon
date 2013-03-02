@@ -17,6 +17,7 @@
 package com.xorlev.simon
 
 import conf.StaticDispatchConfig
+import handlers.StaticFileRequestHandler
 import util.Loggable
 
 

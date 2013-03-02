@@ -6,7 +6,12 @@
 
     <groupId>com.xorlev</groupId>
     <artifactId>simon_2.9.2</artifactId>
+    <packaging>pom</packaging>
     <version>0.0.1-SNAPSHOT</version>
+    <modules>
+        <module>simon-http-server</module>
+        <module>simon-sinatra-handler</module>
+    </modules>
     <name>Simon Webserver</name>
     <description>Learning project to teach me Scala and go further in depth with the HTTP RFCs</description>
 
@@ -46,26 +51,7 @@
             <artifactId>joda-time</artifactId>
             <version>2.1</version>
         </dependency>
-        <dependency>
-            <groupId>org.joda</groupId>
-            <artifactId>joda-convert</artifactId>
-            <version>1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.yammer.metrics</groupId>
-            <artifactId>metrics-core</artifactId>
-            <version>2.1.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.yammer.metrics</groupId>
-            <artifactId>metrics-scala_2.9.1</artifactId>
-            <version>2.1.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml</groupId>
-            <artifactId>jackson-module-scala</artifactId>
-            <version>1.9.3</version>
-        </dependency>
+
         <!-- testing -->
         <!--<dependency>-->
             <!--<groupId>org.fusesource.scalate</groupId>-->

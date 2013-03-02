@@ -18,18 +18,22 @@ package com.xorlev.simon.handlers
 
 import com.xorlev.simon.model._
 import collection.mutable.{ListBuffer, HashMap}
-import com.xorlev.simon.util.{RenderUtil, MimeUtil}
 import collection.mutable
 import util.DynamicVariable
-import org.codehaus.jackson.map.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import xml.NodeSeq
 import java.io.ByteArrayInputStream
-import com.xorlev.simon.model.HttpRequest
-import com.xorlev.simon.model.HttpResponse
 import scala.Some
-import com.xorlev.simon.request.{SinatraPathPatternParser, PathPattern, RequestHandler}
 import util.matching.Regex
+import scala.Some
+import com.xorlev.simon.handlers.HaltedHandlerException
+import scala.Some
+import com.xorlev.simon.handlers.HaltedHandlerException
+import scala.Some
+import com.xorlev.simon.handlers.HaltedHandlerException
+import com.xorlev.simon.request.{SinatraPathPatternParser, PathPattern, RequestHandler}
+import org.codehaus.jackson.map.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import com.xorlev.simon.util.{RenderUtil, MimeUtil}
 
 /**
  * Dynamic App handler

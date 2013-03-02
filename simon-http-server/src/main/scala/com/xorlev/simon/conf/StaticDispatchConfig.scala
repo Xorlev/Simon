@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-package com.xorlev.simon.handlers
+package com.xorlev.simon.conf
 
-import com.xorlev.simon.util.SimonException
+//import com.xorlev.simon.handlers.TestHandler
+import com.xorlev.simon.request.{StaticRequestMapper, RequestMapper}
 
 /**
- * 2012-12-13
- * @author Michael Rose <elementation@gmail.com>
+ * 2012-12-10
+ * @author Michael Rose <michael@fullcontact.com>
  */
 
-case class HaltedHandlerException(code: Int, haltMessage: String = "") extends SimonException
+class StaticDispatchConfig extends DispatchConfig {
+  def config() {
+    //RequestMapper.registerHandler("/", new StaticFileRequestHandler("/", "_site/"))
+   // StaticRequestMapper.registerHandler("/", new TestHandler("/"))
+  }
+}
