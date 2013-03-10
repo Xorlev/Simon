@@ -25,7 +25,7 @@ import com.xorlev.simon.util.Loggable
  * @author Michael Rose <elementation@gmail.com>
  */
 
-class TestHandler(basePath: String) extends DynamicMethodHandler {
+class TestHandler(basePath: String) extends SinatraHandler {
   get("/") {
     <html>
       <head>
@@ -52,6 +52,10 @@ class TestHandler(basePath: String) extends DynamicMethodHandler {
 
   get("/json") {
     List(1,2,3,4)
+  }
+
+  get("/view") {
+    view("test.jade")
   }
 
 

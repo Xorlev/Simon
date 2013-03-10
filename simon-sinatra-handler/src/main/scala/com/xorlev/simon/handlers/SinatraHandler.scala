@@ -17,23 +17,17 @@
 package com.xorlev.simon.handlers
 
 import com.xorlev.simon.model._
-import collection.mutable.{ListBuffer, HashMap}
+import collection.mutable.ListBuffer
 import collection.mutable
 import util.DynamicVariable
 import xml.NodeSeq
 import java.io.ByteArrayInputStream
 import scala.Some
-import util.matching.Regex
-import scala.Some
-import com.xorlev.simon.handlers.HaltedHandlerException
-import scala.Some
-import com.xorlev.simon.handlers.HaltedHandlerException
-import scala.Some
-import com.xorlev.simon.handlers.HaltedHandlerException
 import com.xorlev.simon.request.{SinatraPathPatternParser, PathPattern, RequestHandler}
 import org.codehaus.jackson.map.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.xorlev.simon.util.{RenderUtil, MimeUtil}
+import org.fusesource.scalate._
 
 /**
  * Dynamic App handler
@@ -45,6 +39,7 @@ import com.xorlev.simon.util.{RenderUtil, MimeUtil}
 class SinatraHandler extends RequestHandler {
   var routes = Vector[(String, PathPattern, HttpRequest => HttpResponse)]()
   val mapper = new ObjectMapper()
+  val engine = new TemplateEngine
   mapper.registerModule(DefaultScalaModule)
 
   val paramsMap = new DynamicVariable[Map[String,_]](null)
@@ -159,6 +154,13 @@ class SinatraHandler extends RequestHandler {
   def delete(path: String)(f: =>Any) = addHandler("DELETE", path, f)
   def options(path: String)(f: =>Any) = addHandler("OPTIONS", path, f)
   def head(path: String)(f: =>Any) = addHandler("HEAD", path, f)
+
+  def view(path: String) = {
+    engine.layout(path, Map(
+      "request" -> request,
+      "params" -> params
+    ))
+  }
 
   private[this] def addHandler(method: String, path: String, f: =>Any) {
     //ctx.put((method, path), x=>doRender(f))
