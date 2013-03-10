@@ -42,7 +42,7 @@ import com.xorlev.simon.util.{RenderUtil, MimeUtil}
  * @author Michael Rose <elementation@gmail.com>
  */
 
-class DynamicMethodHandler extends RequestHandler {
+class SinatraHandler extends RequestHandler {
   var routes = Vector[(String, PathPattern, HttpRequest => HttpResponse)]()
   val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
