@@ -16,6 +16,9 @@
 
 package com.xorlev.simon.handlers
 
+import com.xorlev.simon.request.RequestHandler
+import com.xorlev.simon.model.HttpRequest
+
 
 /**
  * Handler to translate requests to the Servlet API
@@ -23,6 +26,6 @@ package com.xorlev.simon.handlers
  * @author Michael Rose <elementation@gmail.com>
  */
 
-class ServletHandler extends RequestHandler {
+class ServletHandler(context: String, basePath: String) extends RequestHandler {
   def handleRequest(request: HttpRequest) = null
 }
