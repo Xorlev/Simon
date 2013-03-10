@@ -11,6 +11,7 @@
     <modules>
         <module>simon-http-server</module>
         <module>simon-sinatra-handler</module>
+        <module>simon-servlet-handler</module>
     </modules>
     <name>Simon Webserver</name>
     <description>Learning project to teach me Scala and go further in depth with the HTTP RFCs</description>
