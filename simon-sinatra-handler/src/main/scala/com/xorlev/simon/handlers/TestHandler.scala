@@ -68,7 +68,7 @@ object TestHandler extends Loggable{
   def main(args:Array[String]) {
     log.info("Starting Simon HTTP server")
 
-    new HttpServer("localhost", 1339)
+    new HttpServer("localhost", 1340)
       .addHandler("/", new TestHandler("/"))
       .runServer()
   }

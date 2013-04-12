@@ -19,6 +19,11 @@ package com.xorlev.simon
 import conf.StaticDispatchConfig
 import handlers.StaticFileRequestHandler
 import util.Loggable
+import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
+import java.util.concurrent.Executors
+import org.jboss.netty.bootstrap.ServerBootstrap
+import org.jboss.netty.channel.{Channels, ChannelPipelineFactory}
+import java.net.InetSocketAddress
 
 
 /**
@@ -30,8 +35,22 @@ object ServerRunner extends Loggable {
   def main(args:Array[String]) {
     log.info("Starting Simon HTTP server")
 
-    new HttpServer("localhost", 1337)
-      .addHandler("/", new StaticFileRequestHandler("/", "../_site"))
-      .runServer()
+//    new NettyHttpServer("localhost", 1337)
+//      .addHandler("/", new StaticFileRequestHandler("/", "../_site"))
+//      .runServer()
+
+    val channelFactory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool())
+    val bootstrap = new ServerBootstrap(channelFactory)
+
+    bootstrap.setPipelineFactory(new ChannelPipelineFactory {
+      def getPipeline = {
+        Channels.pipeline(new NettyHttpServer("", 1339))
+      }
+    })
+
+    bootstrap.setOption("child.tcpNoDelay", true)
+    bootstrap.setOption("child.keepAlive", true)
+
+    bootstrap.bind(new InetSocketAddress(1339))
   }
 }
