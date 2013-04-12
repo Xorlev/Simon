@@ -24,7 +24,7 @@ import xml.NodeSeq
 import java.io.ByteArrayInputStream
 import scala.Some
 import com.xorlev.simon.request.{SinatraPathPatternParser, PathPattern, RequestHandler}
-import org.codehaus.jackson.map.ObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.xorlev.simon.util.{RenderUtil, MimeUtil}
 import org.fusesource.scalate._
@@ -36,11 +36,15 @@ import org.fusesource.scalate._
  * @author Michael Rose <elementation@gmail.com>
  */
 
+object SinatraHandlerShared {
+  val mapper = new ObjectMapper()
+  val engine = new TemplateEngine()
+  mapper.registerModule(DefaultScalaModule)
+}
+
 class SinatraHandler extends RequestHandler {
   var routes = Vector[(String, PathPattern, HttpRequest => HttpResponse)]()
-  val mapper = new ObjectMapper()
-  val engine = new TemplateEngine
-  mapper.registerModule(DefaultScalaModule)
+
 
   val paramsMap = new DynamicVariable[Map[String,_]](null)
   val requestVar = new DynamicVariable[HttpRequest](null)
@@ -63,12 +67,12 @@ class SinatraHandler extends RequestHandler {
 //      Some(NotFound(RenderUtil.notFound()))
 //    }
 
-    log.debug("Finding routes for {}, {}", r, routes)
+    log.debug("Finding routes for {}", r)
     var response:Option[HttpResponse] = None
     routes.foreach { x =>
-      println(x._1 + x._2.toString)
-      println(x._2.apply(r.resource))
-      println(x._2.apply(r.resource).isDefined && x._1 == r.method)
+      //println(x._1 + x._2.toString)
+      //println(x._2.apply(r.resource))
+      //println(x._2.apply(r.resource).isDefined && x._1 == r.method)
       if (x._2.apply(r.resource).isDefined && x._1 == r.method) {
         try {
           response = Some(runRoute(request, extractParams(x._2.apply(r.resource).getOrElse(Map.empty)), x._3))
@@ -135,12 +139,12 @@ class SinatraHandler extends RequestHandler {
    * @return HttpResponse(code, mime, data)
    */
   private[this] def doRender(f: =>Any): HttpResponse = {
-    f match {
+      f match {
       case n:HttpResponse => n
       case n:NodeSeq => HttpResponse(200, MimeUtil.HTML, n.toString())
       case n:Array[Byte] => HttpResponse(200, MimeUtil.STREAM, new ByteArrayInputStream(n))
       case n:String => HttpResponse(200, MimeUtil.PLAIN, n)
-      case n:Any if mapper.canSerialize(n.getClass) => HttpResponse(200, MimeUtil.JSON, mapper.writeValueAsString(n))
+      case n:Any if SinatraHandlerShared.mapper.canSerialize(n.getClass) => HttpResponse(200, MimeUtil.JSON, SinatraHandlerShared.mapper.writeValueAsString(n))
       case _ => UnprocessableEntity(RenderUtil.unprocessableEntity())
     }
   }
@@ -156,7 +160,7 @@ class SinatraHandler extends RequestHandler {
   def head(path: String)(f: =>Any) = addHandler("HEAD", path, f)
 
   def view(path: String) = {
-    engine.layout(path, Map(
+    SinatraHandlerShared.engine.layout(path, Map(
       "request" -> request,
       "params" -> params
     ))

@@ -1,3 +1,9 @@
-- for(i <- 1 to 3)
-  p= i
-p See, I can count!
+doctype 5
+html(lang="en")
+  head
+    title= "Hello Page"
+  body
+    h1 Jade - node template engine
+    #container
+      p Hello world
+      p #{request}

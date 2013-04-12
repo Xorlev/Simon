@@ -21,7 +21,7 @@ import java.lang.String
 import java.net.{Socket, SocketException, ServerSocket, InetAddress}
 import request.{StaticRequestMapper, RequestHandler}
 import util._
-import java.util.concurrent.{TimeUnit, Executors}
+import java.util.concurrent._
 import com.yammer.metrics.scala.Instrumented
 import sun.misc.{Signal, SignalHandler}
 
@@ -32,13 +32,19 @@ import sun.misc.{Signal, SignalHandler}
 
 class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
   val addr = InetAddress.getByName(host)
-  val serverSocket = new ServerSocket(port, 16384)
+  val serverSocket = new ServerSocket(port, -1)
   var running: Boolean = false
-  val tp = Executors.newFixedThreadPool(16)
+  val tp = Executors.newCachedThreadPool()
   val m = metrics.meter("requests", "requests")
   val requestMapper = StaticRequestMapper
 
   init()
+
+  class FixedLengthThreadPoolExecutor(threads: Int, size: Int) {
+    def create = {
+      new ThreadPoolExecutor(threads/2, threads, 50L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue[Runnable](size))
+    }
+  }
 
   def init() {
     Signal.handle(new Signal("TERM"), new SignalHandler {
@@ -47,8 +53,8 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
       }
     })
 
-    serverSocket.setPerformancePreferences(0,1,2)
-    serverSocket.setReuseAddress(true)
+    //serverSocket.setPerformancePreferences(0,1,2)
+    //serverSocket.setReuseAddress(true)
   }
 
   def addHandler(path: String, handler: RequestHandler) = {
@@ -64,7 +70,11 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
       while(running) {
         val sock = acceptSocket(serverSocket)
 
-        tp.submit(new SocketConnectionHandler(sock, requestMapper))
+        try {
+          tp.submit(new SocketConnectionHandler(sock, requestMapper))
+        } catch {
+          case e:RejectedExecutionException => sock.close()
+        }
       }
     } catch {
       case e:SocketException => log.error("Socket error:",e)
@@ -74,8 +84,8 @@ class HttpServer(host: String, port: Int) extends Loggable with Instrumented {
 
   def acceptSocket(serverSocket: ServerSocket):Socket = {
     val sock = serverSocket.accept()
-    log.trace("Accepted socket {}", sock.getRemoteSocketAddress)
-    m.mark()
+    //log.trace("Accepted socket {}", sock.getRemoteSocketAddress)
+    //m.mark()
 
     sock
   }
